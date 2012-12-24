@@ -1,0 +1,13 @@
+% layout 'default';
+% title 'confirm - Kabuyoso()';
+% my $message = (flash 'message');
+<div id='header'>
+  <div id='title'>
+    <h1>confirm</h1>
+  </div>
+</div>
+<div class="message">
+  <p>
+    <%= $message %>
+  </p>
+</div>

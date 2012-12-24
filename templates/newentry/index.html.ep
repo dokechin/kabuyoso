@@ -1,0 +1,23 @@
+% layout 'default';
+% title 'newentry - Kabuyoso()';
+% my $error_messages = (flash 'error_messages');
+% my $stock_id = (flash 'stock_id') || '';
+<div id='header'>
+  <div id='title'>
+    <h1>register</h1>
+  </div>
+</div>
+<% if ($error_messages) { %>
+<div class="error">
+  <% foreach my $error_message (@$error_messages) { %>
+  <p>
+    <%= $error_message %>
+  </p><% } %>
+</div><% } %>
+<div class='form'>
+<%= form_for '/new_entry' => (method => 'post') => begin %>
+コード:<%= text_field 'stock_id' => $stock_id %><br>
+上昇<%= radio_button up_or_down => 'up'%>下落<%= radio_button up_or_down => 'down'%>
+<%= submit_button '送信' %><% end %>
+</div>
+ 

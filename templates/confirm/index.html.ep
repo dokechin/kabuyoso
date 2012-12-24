@@ -1,0 +1,31 @@
+% layout 'default';
+% title 'confirm - Kabuyoso()';
+% my $error_messages = (flash 'error_messages');
+% my $message = (flash 'message');
+% my $user_id = (stash 'user_id') || '';
+<div id='header'>
+  <div id='title'>
+    <h1>confirm</h1>
+  </div>
+</div>
+<% if ($message) { %>
+<div class="message">
+  <p>
+    <%= $message %>
+  </p>
+</div><% } else{ %>
+<% if ($error_messages) { %>
+<div class="error">
+  <% foreach my $error_message (@$error_messages) { %>
+  <p>
+    <%= $error_message %>
+  </p><% } %>
+</div><% } %>
+<div class='form'>
+<%= form_for '/confirm' => (method => 'post') => begin %>
+user_id:<%= $user_id %>を登録します。<br>
+<%= hidden_field user_id => $user_id %>
+<%= hidden_field key => $key %>
+<%= submit_button '確認' %><% end %>
+</div>
+<% } %>

@@ -1,0 +1,35 @@
+% layout 'default';
+% title 'resiger - Kabuyoso()';
+% my $error_messages = (flash 'error_messages');
+% my $message = (flash 'message');
+% my $user_id = (flash 'user_id') || '';
+% my $mail = (flash 'mail') || '';
+% my $password1 = (flash 'password1') || '';
+% my $password2 = (flash 'password2') || '';
+<div id='header'>
+  <div id='title'>
+    <h1>register</h1>
+  </div>
+</div>
+<% if ($message) { %>
+<div class="message">
+  <p>
+    <%= $message %>
+  </p>
+</div><% } else{ %>
+<% if ($error_messages) { %>
+<div class="error">
+  <% foreach my $error_message (@$error_messages) { %>
+  <p>
+    <%= $error_message %>
+  </p><% } %>
+</div><% } %>
+<div class='form'>
+<%= form_for '/register' => (method => 'post') => begin %>
+user_id:<%= text_field 'user_id' => $user_id %><br>
+password:<%= password_field 'password1'%><br>
+password(confirm):<%= password_field 'password2'%><br>
+mail:<%= text_field mail => $mail %>
+<%= submit_button '送信' %><% end %>
+</div>
+<% } %>

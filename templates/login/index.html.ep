@@ -1,0 +1,22 @@
+% layout 'default';
+% title 'Login - Kabuyoso()';
+% my $error_messages = (flash 'error_messages');
+% my $user_id = (flash 'user_id') || '';
+<div id='header'>
+  <div id='title'>
+    <h1>Login</h1>
+  </div>
+</div>
+<% if ($error_messages) { %>
+<div class="error">
+  <% foreach my $error_message (@$error_messages) { %>
+  <p>
+    <%= $error_message %>
+  </p><% } %>
+</div><% } %>
+<div class='form'>
+<%= form_for '/login' => (method => 'post') => begin %>
+user_id:<%= text_field 'user_id' => $user_id %><br>
+password<%= password_field 'password' %>
+<%= submit_button '送信' %><% end %>
+</div> 
