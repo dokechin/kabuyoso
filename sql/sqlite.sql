@@ -4,21 +4,26 @@ create table  User(
        mail                         text,
        key                          text,
        password                     text,
-       yoso_count                   int,
+       bet_count                    int,
        win_count                    int,
-       active                       int,
+       betting_count                int,
+       active                       int, -- 0:inactive 1:active 2:blacklist
        create_at                    datetime
 );
-
-create table expect (
+create table Stock(
+       stock_code                   text,
+       name                         text);
+create table Bet (
        user_id                      text,
        stock_code                   text,
+       stock_name                   text,
+       start_date                   date,
        start_price                  int,
-       expect_price                 int,
+       require_price                int,
        up_or_down                   text,
-       trade_price                  int,
+       win_price                    int,
+       win_date                     date,
        create_at                    datetime,
-       end_at                       date,
-       trade_at                     date,
-       active                       int);
-
+       limit_date                   date,
+       active                       int); -- 1:active 2:fail 3:success
+ 

@@ -1,4 +1,4 @@
-package Kabuyoso::Web::NewEntry;
+package Kabuyoso::Web::Newentry;
 use Mojo::Base 'Mojolicious::Controller';
 use HTML::FillInForm::Lite;    #追加
 use FormValidator::Lite qw(Japanese Email);
@@ -9,79 +9,92 @@ sub index {
     $self->render();
 }
 # This action will render a template
+sub confirm {
+    my $self = shift;
+    $self->render();
+}
+# This action will render a template
 sub complete {
     my $self = shift;
+    my $row = $self->app->db->insert("Bet",{"user_id" => $self->session("user_id"),
+         stock_code => $self->param("stock_code"),
+         start_price => $self->param("start_price"),
+         stock_name => $self->param("stock_name"),
+         up_or_down => $self->param("up_or_down"),
+         require_price => $self->param("require_price"),
+         start_date => $self->param("start_date"),
+         active => "1"});
+   
     $self->render();
 }
 # This action will render a template
 sub post {
     my $self = shift;
+    my $stock;
+    my $stock_name;
+    my $lastPrice;
+    my $requirePrice;
     my @messages;
+    my $lastEigyobi;
     my $validator = FormValidator::Lite->new( $self->req );
     # エラーメッセージを設定
     $validator->set_message(
-        'user_id.not_null'      => 'UserID is Empty',
-        'user_id.length'        => 'UserID length',
-        'mail.not_null'         => 'Mail is Empty',
-        'mail.email'            => 'Mail address invalid',
-        'password1.not_null'    => 'Password1 is Empty',
-        'password2.not_null'    => 'Password2 is Empty',
-        'password1.length'      => 'Password1 length',
-        'password2.length'      => 'Password2 length',
-        'passwords.duplication' => 'passwords not same',
+        'stock_code.not_null'    => 'Stock Code is Empty',
+        'stock_code.uint'    => 'Stock Code is not valid',
+        'up_or_down.not_null'    => 'Up or down is Empty',
     );
     # 入力値チェック
     my $res = $validator->check(
-        user_id   => [ qw/NOT_NULL/, [qw/LENGTH 3 10/] ],
-        mail      => [qw/NOT_NULL EMAIL/],
-        password1 => [ 'NOT_NULL',   [qw/LENGTH 6 20/] ],
-        password2 => [ 'NOT_NULL',   [qw/LENGTH 6 20/] ],
-        { passwords => [qw/password1 password2/] } => ['DUPLICATION'],
+        stock_code   => [ qw/NOT_NULL UINT/ ],
+        up_or_down   => [qw/NOT_NULL /],
     );
     # もし入力値が正しくなかったら
     if ( $validator->has_error ) {
         @messages = $validator->get_error_messages;
     }
     else {
-        my $ite = $self->app->db->search( "User",
-            { "user_id" => $self->param('user_id') } );
-        print "search";
-        if ( $ite->next ) {
-            print "hoge";
-            push @messages, 'user_id is already registered';
+#        if ($self->app->db->isBacyu() == 0){
+#            push @messages, "Now trading date";
+#        }
+         $lastEigyobi = $self->app->db->getLastEigyobi();
+         my $row = $self->app->db->single("Bet",{"user_id" => $self->session("user_id"),
+         stock_code => $self->param("stock_code"),
+         active => "1"});
+         if ( defined $row ){
+             push @messages,"既に登録済みです";
+         }
+         $stock = $self->app->db->single("Stock",{stock_code => $self->param("stock_code")});
+         if ( !defined $stock){
+             push @messages, "登録されていないコードです。";
+         }
+        $lastPrice = $self->app->db->getLastPrice($self->param('stock_code'));
+        if ($lastPrice < 100){
+             push @messages, "lower price";
         }
-        $ite =
-          $self->app->db->search( "User",
-            { mail => $self->param('mail'), active => 1 } );
-        if ( $ite->next ) {
-            print "hoge";
-            push @messages, 'mail is already registered';
+       
+        if ($self->param("up_or_down") == 1){
+            $requirePrice = $lastPrice * 1.1;
         }
+        else{
+            $requirePrice = $lastPrice * 0.9;
+        }
+
     }
     if (@messages) {
         $self->flash( error_messages => \@messages );
-        $self->flash( user_id        => $self->param('user_id') );
-        $self->flash( password1      => $self->param('password1') );
-        $self->flash( password2      => $self->param('password2') );
-        $self->flash( mail           => $self->param('mail') );
-        $self->redirect_to('/register');
+        $self->flash( stock_code        => $self->param('stock_code') );
+        $self->flash( up_or_down        => $self->param('up_or_down') );
+        $self->redirect_to('/new_entry');
     }
     else {
-        my $key = $self->app->db->get_key();
-        $self->app->db->insert(
-            'User',
-            {
-                user_id => $self->param('user_id'),
-                mail    => $self->param('mail'),
-                key     => $key,
-                active  => 0,
-            }
-        );
-        #mail send
-        $self->flash(
-            message => "メール送信しました http://localhost:3000/confirm?key="
-              . $key );
-        $self->redirect_to('/register/complete');
+        $self->flash( stock_code        => $self->param('stock_code') );
+        $self->flash( start_date        => $lastEigyobi);
+        $self->flash( up_or_down        => $self->param('up_or_down') );
+        $self->flash( stock_name        => $stock->name );
+        $self->flash( start_price       => $lastPrice );
+        $self->flash( require_price     => $requirePrice);
+        $self->redirect_to('/new_entry/confirm');
     }
 }
 1;
+ 

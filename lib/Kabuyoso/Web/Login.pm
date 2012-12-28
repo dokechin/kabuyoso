@@ -16,16 +16,13 @@ sub post {
     my $validator = FormValidator::Lite->new( $self->req );
     # エラーメッセージを設定
     $validator->set_message(
-        'user_id.not_null'      => 'UserID is Empty',
-        'user_id.length'        => 'UserID length',
-        'user_id.ascii'      => 'UserID is not ascii',
-        'password.not_null'    => 'Password is Empty',
-        'password.ascii'    => 'Password is not ascii',
+        'user_id.not_null'      => 'ユーザＩＤが入力されていません。',
+        'password.not_null'    => 'パスワードが入力されていません。',
     );
     # 入力値チェック
     my $res = $validator->check(
-        user_id   => [ qw/NOT_NULL ASCII/, [qw/LENGTH 3 10/] ],
-        password => [ qw/NOT_NULL ASCII/,   [qw/LENGTH 6 20/] ],
+        user_id   => [ qw/NOT_NULL/ ],
+        password => [ qw/NOT_NULL/ ],
     );
     # もし入力値が正しくなかったら
     if ( $validator->has_error ) {
@@ -33,7 +30,7 @@ sub post {
     }
     else {
         if ($self->app->db->login($self->param('user_id'),$self->param('password')) == 0){
-            push @messages, 'login error';
+            push @messages, 'ログインエラーです。';
         }
     }
     if (@messages) {
@@ -42,7 +39,7 @@ sub post {
     }
     else {
         $self->session("user_id" => $self->param('user_id'));
-        $self->redirect_to('/user/' . $self->param('user_id'));
+        $self->redirect_to('/new_entry');
     }
 }
 1;
